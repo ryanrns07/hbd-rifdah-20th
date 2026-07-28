@@ -1,0 +1,303 @@
+@import "tailwindcss";
+@import "lenis/dist/lenis.css";
+
+/* ═══════════════════════════════════════════════
+   DESIGN TOKENS — Cinematic Romantic Palette
+   ═══════════════════════════════════════════════ */
+
+:root {
+  /* — Core Palette — */
+  --color-bg-primary: #0a0808;
+  --color-bg-secondary: #110e0c;
+  --color-bg-card: rgba(20, 16, 14, 0.7);
+  --color-surface: rgba(255, 248, 240, 0.04);
+
+  /* — Typography — */
+  --color-text-primary: #f5efe6;
+  --color-text-secondary: rgba(245, 239, 230, 0.65);
+  --color-text-accent: #d4a574;
+  --color-text-muted: rgba(245, 239, 230, 0.4);
+
+  /* — Accent Warm Gold — */
+  --color-accent: #c8956c;
+  --color-accent-light: #dbb896;
+  --color-accent-glow: rgba(200, 149, 108, 0.25);
+
+  /* — Borders & Dividers — */
+  --color-border: rgba(212, 165, 116, 0.15);
+  --color-border-hover: rgba(212, 165, 116, 0.35);
+
+  /* — Glassmorphism — */
+  --glass-bg: rgba(20, 16, 14, 0.55);
+  --glass-border: rgba(212, 165, 116, 0.12);
+  --glass-blur: 20px;
+
+  /* — Cinematic Video Filter — */
+  --video-filter: brightness(0.7) contrast(1.1) saturate(0.85) sepia(0.15);
+
+  /* — Spacing & Layout — */
+  --section-padding-x: clamp(1.5rem, 5vw, 6rem);
+  --section-padding-y: clamp(4rem, 10vh, 8rem);
+
+  /* — Transitions — */
+  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-cinematic: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-slow: 1200ms;
+  --duration-medium: 600ms;
+  --duration-fast: 300ms;
+}
+
+/* ═══════════════════════════════════════════════
+   TAILWIND THEME INTEGRATION
+   ═══════════════════════════════════════════════ */
+
+@theme inline {
+  --color-background: var(--color-bg-primary);
+  --color-foreground: var(--color-text-primary);
+  --font-sans: var(--font-outfit);
+  --font-serif: var(--font-playfair);
+}
+
+/* ═══════════════════════════════════════════════
+   GLOBAL RESET & BASE
+   ═══════════════════════════════════════════════ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-outfit), system-ui, sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: var(--color-bg-primary);
+}
+
+/* ═══════════════════════════════════════════════
+   CINEMATIC VIDEO FILTER
+   ═══════════════════════════════════════════════ */
+
+.video-cinematic {
+  filter: var(--video-filter);
+  object-fit: cover;
+}
+
+.video-overlay {
+  background: linear-gradient(
+    to bottom,
+    rgba(10, 8, 8, 0.3) 0%,
+    rgba(10, 8, 8, 0.15) 40%,
+    rgba(10, 8, 8, 0.5) 70%,
+    rgba(10, 8, 8, 0.95) 100%
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   GLASSMORPHISM UTILITIES
+   ═══════════════════════════════════════════════ */
+
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+}
+
+.glass-hover:hover {
+  background: rgba(25, 20, 17, 0.65);
+  border-color: var(--color-border-hover);
+}
+
+/* ═══════════════════════════════════════════════
+   TYPOGRAPHY UTILITIES
+   ═══════════════════════════════════════════════ */
+
+.heading-cinematic {
+  font-family: var(--font-playfair), Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--color-text-primary);
+}
+
+.text-romantic {
+  font-family: var(--font-playfair), Georgia, serif;
+  font-style: italic;
+  color: var(--color-text-accent);
+  letter-spacing: 0.01em;
+}
+
+.text-accent-warm {
+  color: var(--color-text-accent);
+}
+
+/* ═══════════════════════════════════════════════
+   SCROLL SNAP (for Gallery)
+   ═══════════════════════════════════════════════ */
+
+.scroll-section {
+  position: relative;
+  will-change: transform;
+}
+
+/* ═══════════════════════════════════════════════
+   BUTTON STYLES
+   ═══════════════════════════════════════════════ */
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 2.5rem;
+  border: 1px solid var(--color-accent);
+  color: var(--color-text-primary);
+  font-family: var(--font-outfit), sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  background: transparent;
+  border-radius: 0;
+  cursor: pointer;
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--color-accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 0;
+}
+
+.btn-primary:hover::before {
+  transform: scaleX(1);
+}
+
+.btn-primary:hover {
+  color: var(--color-bg-primary);
+  box-shadow: 0 0 30px rgba(200, 149, 108, 0.4);
+  transform: scale(1.02);
+  letter-spacing: 0.2em;
+}
+
+.btn-primary span {
+  position: relative;
+  z-index: 1;
+  transition: letter-spacing 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ═══════════════════════════════════════════════
+   DIVIDER / DECORATIVE LINE
+   ═══════════════════════════════════════════════ */
+
+.divider-accent {
+  width: 60px;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--color-accent),
+    transparent
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   SCROLLBAR CUSTOMIZATION
+   ═══════════════════════════════════════════════ */
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-accent);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent-light);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent);
+}
+
+/* ═══════════════════════════════════════════════
+   ANIMATIONS — Keyframes
+   ═══════════════════════════════════════════════ */
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 20px var(--color-accent-glow);
+  }
+  50% {
+    box-shadow: 0 0 40px var(--color-accent-glow),
+      0 0 60px rgba(200, 149, 108, 0.1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 25%,
+    var(--color-accent-glow) 50%,
+    transparent 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+}
