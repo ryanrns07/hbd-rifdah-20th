@@ -14,11 +14,13 @@ const VIDEO_EXTENSIONS = new Set([".mp4", ".webm", ".mov"]);
    ═══════════════════════════════════════════════ */
 
 const floatingQuotes = [
-  "Setiap detik bersamamu adalah puisi...",
-  "Tawamu yang mengalahkan jarak...",
-  "Menuju masa depan yang kita aminkan bersama.",
-  "Dua dekade yang membentuk jiwa terindah...",
-  "Setiap kenangan adalah hadiah yang tak ternilai.",
+  "Di matamu, aku selalu menemukan rumah ternyaman untuk berpulang...",
+  "Dua dekade yang membentuk perempuan paling anggun yang pernah kukenal.",
+  "Tawamu yang manis adalah melodi paling menenangkan di hari-hari lelahku.",
+  "Sejauh apa pun jarak membentang, hatiku selalu tertambat erat padamu.",
+  "Terima kasih telah memilih untuk melangkah dan bertumbuh bersamaku.",
+  "Menuju masa depan yang selalu kita bisikkan dan aminkan dalam doa bersama.",
+  "Setiap senyummu adalah alasan mengapa duniaku terasa begitu indah.",
 ];
 
 /* ═══════════════════════════════════════════════

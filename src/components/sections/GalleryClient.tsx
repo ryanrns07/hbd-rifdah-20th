@@ -57,18 +57,17 @@ function SectionHeader() {
         className="text-xs tracking-[0.3em] uppercase mb-4"
         style={{ color: "var(--color-text-accent)" }}
       >
-        Memori & Kenangan
+        Jejak Langkah Kita & Kenangan Indah
       </span>
       <div className="divider-accent mx-auto mb-6" />
       <h2 className="heading-cinematic text-3xl sm:text-4xl md:text-5xl lg:text-6xl mb-4">
-        The Chapters of <span className="text-accent-warm">You</span>
+        The Chapters of <span className="text-accent-warm">You & Us</span>
       </h2>
       <p
         className="text-sm sm:text-base max-w-lg"
         style={{ color: "var(--color-text-secondary)" }}
       >
-        Setiap foto menyimpan sebuah cerita. Geser ke samping untuk menyusuri
-        perjalanan yang indah ini.
+        Setiap potret dan tawa yang terabadikan adalah bukti betapa berharganya setiap detik yang kulalui bersamamu.
       </p>
     </motion.div>
   );

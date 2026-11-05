@@ -144,7 +144,7 @@ export default function Hero({ videoSrc }: HeroProps) {
           style={{ color: "var(--color-text-accent)", fontFamily: "var(--font-outfit)" }}
           variants={fadeUpVariants}
         >
-          A Digital Love Letter
+          Kado Ulang Tahun dari Ryan &bull; Untuk Bidadariku
         </motion.span>
 
         {/* Main Headline */}
@@ -159,7 +159,7 @@ export default function Hero({ videoSrc }: HeroProps) {
 
         {/* Typewriter sub-headline */}
         <TypewriterText
-          text="Selamat ulang tahun ke-20, Rifdah Nur Shafiyah. Sejauh apa pun jarak memisahkan, kamu selalu menjadi tempatku berpulang."
+          text="Selamat ulang tahun ke-20, Rifdah Nur Shafiyah. Terima kasih telah hadir, mewarnai setiap detak hidupku, dan menjadi rumah ternyaman tempatku berpulang."
           delay={2.5}
         />
 
@@ -176,7 +176,7 @@ export default function Hero({ videoSrc }: HeroProps) {
             className="btn-primary"
             aria-label="Mulai perjalanan — scroll ke galeri"
           >
-            <span>Mulai Perjalanan</span>
+            <span>Susuri Kenangan Kita ✨</span>
           </button>
         </motion.div>
       </motion.div>

@@ -19,14 +19,14 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Dua Dekade Penuh Keanggunan — HBD Rifdah",
+  title: "Untuk Rifdah Nur Shafiyah — Dua Dekade Penuh Keanggunan (Kado dari Ryan)",
   description:
-    "Selamat ulang tahun ke-20, Rifdah Nur Shafiyah. Sebuah surat cinta digital yang merayakan dua dekade keanggunanmu.",
-  keywords: ["birthday", "tribute", "Rifdah", "love letter"],
+    "Selamat ulang tahun ke-20 untuk bidadariku, Rifdah Nur Shafiyah. Sebuah persembahan cinta, harapan, dan kenangan terindah dari Ryan.",
+  keywords: ["birthday", "Rifdah", "love letter", "Ryan and Rifdah", "20th birthday"],
   openGraph: {
-    title: "Dua Dekade Penuh Keanggunan — HBD Rifdah",
+    title: "Untuk Rifdah Nur Shafiyah — Dua Dekade Penuh Keanggunan",
     description:
-      "Sebuah surat cinta digital yang merayakan dua dekade keanggunan Rifdah Nur Shafiyah.",
+      "Sebuah persembahan cinta, harapan, dan kenangan terindah dari Ryan untuk Rifdah di usia ke-20.",
     type: "website",
   },
 };
