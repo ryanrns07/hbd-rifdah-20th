@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import BirthdayIntro from "@/components/sections/BirthdayIntro";
+import MusicPlayer from "@/components/ui/MusicPlayer";
 import Hero from "@/components/sections/Hero";
 import Gallery from "@/components/sections/Gallery";
 import LoveLetter from "@/components/sections/LoveLetter";
@@ -31,6 +32,9 @@ export default function Home() {
 
   return (
     <main className="relative">
+      {/* ═══ Persistent Floating Music Player (Looping BGM) ═══ */}
+      <MusicPlayer />
+
       {/* ═══ The Interactive Birthday Cake Intro (Mic Blow Detection) ═══ */}
       <BirthdayIntro />
 

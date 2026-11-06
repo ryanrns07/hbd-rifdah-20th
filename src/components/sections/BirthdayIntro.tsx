@@ -3,57 +3,71 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
-import { Mic, Wind, Sparkles, Heart, Volume2 } from "lucide-react";
+import { Mic, Wind, Heart, Sparkles, ChevronRight, RotateCcw } from "lucide-react";
 
 interface BirthdayIntroProps {
   onComplete?: () => void;
 }
 
+type Stage = "greeting" | "lighting" | "ready" | "blown" | "stats-age" | "stats-heart" | "final-wish";
+
 export default function BirthdayIntro({ onComplete }: BirthdayIntroProps) {
-  const [isDismissed, setIsDismissed] = useState(false);
-  const [isBlown, setIsBlown] = useState(false);
+  const [stage, setStage] = useState<Stage>("greeting");
+  const [litCandles, setLitCandles] = useState<number[]>([]);
   const [isListening, setIsListening] = useState(false);
   const [micError, setMicError] = useState<string | null>(null);
-  const [audioLevel, setAudioLevel] = useState(0);
+  const [holdProgress, setHoldProgress] = useState(0);
+  const [isDismissed, setIsDismissed] = useState(false);
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const animFrameRef = useRef<number | null>(null);
   const blowCountRef = useRef(0);
+  const holdIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Play a celebratory synth chime using Web Audio API
-  const playCelebrationChime = useCallback(() => {
-    try {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      const ctx = new AudioCtx();
-      const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6 (Bright romantic arpeggio)
-      notes.forEach((freq, idx) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.12);
-        gain.gain.setValueAtTime(0.001, ctx.currentTime + idx * 0.12);
-        gain.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime + idx * 0.12 + 0.04);
-        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + idx * 0.12 + 1.2);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(ctx.currentTime + idx * 0.12);
-        osc.stop(ctx.currentTime + idx * 0.12 + 1.3);
-      });
-    } catch {
-      // AudioContext not allowed or not supported; gracefully ignore
+  // ── Step 0: Auto-advance from Greeting to Lighting Cake ──
+  useEffect(() => {
+    if (stage === "greeting") {
+      const timer = setTimeout(() => {
+        setStage("lighting");
+      }, 3000);
+      return () => clearTimeout(timer);
     }
-  }, []);
+  }, [stage]);
 
-  // Trigger candle blowout & celebration
+  // ── Step 1: Animated Matchstick lighting each of the 5 candles ──
+  useEffect(() => {
+    if (stage === "lighting") {
+      setLitCandles([]);
+      const timers: NodeJS.Timeout[] = [];
+      // Light candles sequentially: candle 0, 1, 2, 3, 4
+      [0, 1, 2, 3, 4].forEach((idx) => {
+        const t = setTimeout(() => {
+          setLitCandles((prev) => [...prev, idx]);
+        }, 800 + idx * 750);
+        timers.push(t);
+      });
+
+      // Once all 5 are lit, switch to "ready"
+      const finalTimer = setTimeout(() => {
+        setStage("ready");
+      }, 800 + 5 * 750 + 600);
+      timers.push(finalTimer);
+
+      return () => timers.forEach(clearTimeout);
+    }
+  }, [stage]);
+
+  // ── Step 3: Blowout Action & Confetti ──
   const triggerBlowout = useCallback(() => {
-    if (isBlown) return;
-    setIsBlown(true);
-    setIsListening(false);
+    if (stage === "blown" || stage === "stats-age" || stage === "stats-heart" || stage === "final-wish") return;
 
-    // Stop microphone stream
+    setStage("blown");
+    setIsListening(false);
+    setLitCandles([]);
+
+    // Stop mic stream
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
@@ -65,52 +79,43 @@ export default function BirthdayIntro({ onComplete }: BirthdayIntroProps) {
       cancelAnimationFrame(animFrameRef.current);
     }
 
-    // Play chime
-    playCelebrationChime();
-
-    // Trigger fireworks / confetti
-    const duration = 3.5 * 1000;
-    const end = Date.now() + duration;
-
-    const frame = () => {
-      confetti({
-        particleCount: 5,
-        angle: 60,
-        spread: 60,
-        origin: { x: 0, y: 0.7 },
-        colors: ["#d4a574", "#e0a96d", "#f5efe6", "#ff6b8b", "#ffd166"],
-      });
-      confetti({
-        particleCount: 5,
-        angle: 120,
-        spread: 60,
-        origin: { x: 1, y: 0.7 },
-        colors: ["#d4a574", "#e0a96d", "#f5efe6", "#ff6b8b", "#ffd166"],
-      });
-
-      if (Date.now() < end) {
-        requestAnimationFrame(frame);
-      }
+    // Celebratory Confetti bursts
+    const count = 180;
+    const defaults = {
+      origin: { y: 0.65 },
+      colors: ["#f5c869", "#ffd166", "#f48c06", "#ff4d6d", "#fbf5eb"],
     };
-    frame();
 
-    // Big heart burst in center
+    confetti({
+      ...defaults,
+      particleCount: Math.floor(count * 0.4),
+      spread: 60,
+    });
+    confetti({
+      ...defaults,
+      particleCount: Math.floor(count * 0.3),
+      spread: 100,
+    });
+    confetti({
+      ...defaults,
+      particleCount: Math.floor(count * 0.3),
+      spread: 140,
+      decay: 0.91,
+      scalar: 0.9,
+    });
+
+    // Automatically transition to Slide 1 (20 TAHUN) after 2.8s
     setTimeout(() => {
-      confetti({
-        particleCount: 60,
-        spread: 100,
-        origin: { y: 0.55 },
-        colors: ["#c8956c", "#ff4d6d", "#ffffff", "#ffd700"],
-      });
-    }, 400);
-  }, [isBlown, playCelebrationChime]);
+      setStage("stats-age");
+    }, 2800);
+  }, [stage]);
 
-  // Start microphone listening
+  // ── Microphone Blow Detection ──
   const startMicrophone = async () => {
     setMicError(null);
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        setMicError("Browser tidak mendukung sensor mikrofon. Gunakan tombol tiup manual.");
+        setMicError("Browser tidak mendukung mikrofon. Silakan gunakan tombol tahan.");
         return;
       }
 
@@ -149,41 +154,67 @@ export default function BirthdayIntro({ onComplete }: BirthdayIntroProps) {
         if (!analyserRef.current) return;
         analyserRef.current.getByteFrequencyData(dataArray);
 
-        // Calculate average energy in lower frequency bins (wind/blow noise creates strong low rumble)
+        // Low frequency energy spike detection for microphone wind blow
         let lowEnergy = 0;
-        const lowBins = Math.min(24, bufferLength);
+        const lowBins = Math.min(20, bufferLength);
         for (let i = 0; i < lowBins; i++) {
           lowEnergy += dataArray[i];
         }
         const avgLow = lowEnergy / lowBins;
-        setAudioLevel(Math.min(100, Math.round(avgLow)));
 
-        // Blow detection threshold
-        if (avgLow > 65) {
+        if (avgLow > 55) {
           blowCountRef.current += 1;
-          if (blowCountRef.current >= 3) {
+          if (blowCountRef.current >= 2) {
             triggerBlowout();
             return;
           }
         } else {
-          blowCountRef.current = Math.max(0, blowCountRef.current - 0.5);
+          blowCountRef.current = Math.max(0, blowCountRef.current - 0.4);
         }
 
         animFrameRef.current = requestAnimationFrame(detectBlow);
       };
 
       detectBlow();
-    } catch (err: unknown) {
-      console.warn("Microphone access error:", err);
-      setMicError("Izin mikrofon tidak diberikan. Kamu bisa meniupnya dengan sentuhan tombol.");
+    } catch {
+      setMicError("Izin mikrofon ditolak. Kamu bisa meniup lilin dengan tombol tahan.");
       setIsListening(false);
     }
   };
 
-  // Cleanup on unmount
+  // ── Press and Hold Handlers (TEKAN LAMA AJA) ──
+  const handleHoldStart = () => {
+    if (stage !== "ready") return;
+    setHoldProgress(0);
+
+    const startTime = Date.now();
+    const duration = 1100; // 1.1s hold to blow
+
+    holdIntervalRef.current = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const pct = Math.min(100, Math.round((elapsed / duration) * 100));
+      setHoldProgress(pct);
+
+      if (pct >= 100) {
+        if (holdIntervalRef.current) clearInterval(holdIntervalRef.current);
+        triggerBlowout();
+      }
+    }, 40);
+  };
+
+  const handleHoldEnd = () => {
+    if (holdIntervalRef.current) {
+      clearInterval(holdIntervalRef.current);
+      holdIntervalRef.current = null;
+    }
+    setHoldProgress(0);
+  };
+
+  // Cleanup
   useEffect(() => {
     return () => {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+      if (holdIntervalRef.current) clearInterval(holdIntervalRef.current);
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop());
       }
@@ -202,402 +233,471 @@ export default function BirthdayIntro({ onComplete }: BirthdayIntroProps) {
     }
   };
 
+  // ── Re-open button if dismissed ──
   if (isDismissed) {
     return (
-      // Small re-open button fixed in the corner so she can replay anytime
       <motion.button
         onClick={() => {
           setIsDismissed(false);
-          setIsBlown(false);
+          setStage("lighting");
         }}
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-medium tracking-wider backdrop-blur-md transition-all hover:scale-105 shadow-xl"
+        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-medium tracking-wider backdrop-blur-md transition-all shadow-xl select-none"
         style={{
-          background: "rgba(20, 16, 14, 0.85)",
-          color: "var(--color-accent)",
-          border: "1px solid var(--color-border-hover)",
+          background: "rgba(14, 30, 24, 0.9)",
+          color: "#f5c869",
+          border: "1px solid rgba(245, 200, 105, 0.4)",
         }}
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
-        whileHover={{ boxShadow: "0 0 20px rgba(200, 149, 108, 0.4)" }}
+        whileHover={{ scale: 1.05 }}
       >
-        <span>🎂</span>
+        <RotateCcw size={14} />
         <span>Tiup Lilin Lagi</span>
       </motion.button>
     );
   }
 
+  // Candle positions across the top tier (x-coordinates)
+  const candlePositions = [72, 94, 116, 138, 160];
+
   return (
     <AnimatePresence>
       <motion.div
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
+        className="fixed inset-0 z-40 flex flex-col items-center justify-center p-6 overflow-hidden select-none"
         style={{
-          background: "radial-gradient(circle at center, #1b1311 0%, #0a0808 70%, #050404 100%)",
+          background: "radial-gradient(circle at 50% 35%, #152d24 0%, #0c1b15 55%, #050b08 100%)",
         }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0, transition: { duration: 1.2 } }}
       >
-        {/* Ambient warm glow behind cake */}
+        {/* Soft background ambient glow */}
         <div
           className="absolute pointer-events-none rounded-full blur-3xl transition-opacity duration-1000"
           style={{
-            width: "480px",
-            height: "480px",
-            background: isBlown
-              ? "radial-gradient(circle, rgba(200, 149, 108, 0.15) 0%, transparent 70%)"
-              : "radial-gradient(circle, rgba(251, 133, 0, 0.28) 0%, rgba(200, 149, 108, 0.12) 50%, transparent 70%)",
+            width: "420px",
+            height: "420px",
+            background: "radial-gradient(circle, rgba(245, 200, 105, 0.18) 0%, transparent 70%)",
+            opacity: stage === "ready" || stage === "lighting" ? 1 : 0.4,
           }}
         />
 
-        {/* Floating golden dust particles */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-30">
-          {[...Array(15)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-1 h-1 rounded-full bg-[#ffd700]"
-              style={{
-                left: `${(i * 19) % 100}%`,
-                top: `${(i * 23) % 100}%`,
-              }}
-              animate={{
-                y: [0, -30, 0],
-                opacity: [0.2, 0.8, 0.2],
-                scale: [0.8, 1.4, 0.8],
-              }}
-              transition={{
-                duration: 3 + (i % 3),
-                repeat: Infinity,
-                delay: i * 0.2,
-                ease: "easeInOut",
-              }}
-            />
-          ))}
-        </div>
-
-        <div className="relative z-10 max-w-lg w-full text-center flex flex-col items-center py-6">
-          {/* Eyebrow badge */}
+        {/* ═════════════════════════════════════════════
+            STAGE 0: GREETING SCREEN (Matching Frame 1)
+           ═════════════════════════════════════════════ */}
+        {stage === "greeting" && (
           <motion.div
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full mb-4 text-[11px] tracking-[0.25em] uppercase"
-            style={{
-              background: "rgba(200, 149, 108, 0.12)",
-              color: "var(--color-accent-light)",
-              border: "1px solid rgba(200, 149, 108, 0.25)",
-            }}
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+            className="text-center z-10 flex flex-col items-center cursor-pointer max-w-sm"
+            onClick={() => setStage("lighting")}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, y: -20, transition: { duration: 0.6 } }}
           >
-            <Sparkles size={13} className="text-[#ffd700]" />
-            <span>Spesial Untuk Rifdah Nur Shafiyah</span>
+            <h1 className="text-4xl sm:text-5xl font-serif text-[#fbf5eb] mb-4 flex items-center justify-center gap-2">
+              <span>Rifdah</span>
+              <span className="text-3xl">😇</span>
+            </h1>
+
+            <p className="text-xl sm:text-2xl font-serif text-[#fbf5eb] flex items-center justify-center gap-2">
+              <span>Selamat ulang tahun ya cantik</span>
+              <span className="text-xl">☺️.</span>
+            </p>
+
+            <span className="text-xs text-[#f5c869]/70 tracking-widest uppercase mt-8 animate-pulse">
+              Ketuk untuk menyalakan lilin &rarr;
+            </span>
           </motion.div>
+        )}
 
-          {/* Heading */}
-          <motion.h1
-            className="heading-cinematic text-3xl sm:text-4xl md:text-5xl mb-2 font-serif text-[#f5efe6]"
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
+        {/* ═════════════════════════════════════════════
+            STAGE 1 & 2: THE CAKE & CANDLE LIGHTING / BLOW
+           ═════════════════════════════════════════════ */}
+        {(stage === "lighting" || stage === "ready" || stage === "blown") && (
+          <motion.div
+            className="flex flex-col items-center text-center z-10 max-w-md w-full"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.7 } }}
           >
-            {isBlown ? (
-              <span className="text-accent-warm">Selamat Ulang Tahun ke-20!</span>
-            ) : (
-              <>
-                Make a Wish, <span className="text-accent-warm">Sayang</span>
-              </>
-            )}
-          </motion.h1>
-
-          <motion.p
-            className="text-xs sm:text-sm text-romantic max-w-sm mb-6 leading-relaxed"
-            style={{ color: "var(--color-text-secondary)" }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
-            {isBlown
-              ? "Lilin telah terpadamkan dan seluruh semesta mengaminkan doamu. Hari ini adalah awal dari dekade terindahmu."
-              : "Tutup matamu sejenak, ucapkan doa terbaikmu dalam hati, lalu tiup lilin ini dengan sepenuh jiwa..."}
-          </motion.p>
-
-          {/* ═══════════════════════════════════════════
-              THE BIRTHDAY CAKE & NUMBER 20 CANDLES
-             ═══════════════════════════════════════════ */}
-          <div
-            className="relative my-4 cursor-pointer select-none group"
-            onClick={triggerBlowout}
-            title={isBlown ? "Lilin sudah ditiup" : "Klik untuk meniup lilin"}
-          >
-            {/* The SVG Birthday Cake */}
-            <svg
-              width="260"
-              height="260"
-              viewBox="0 0 260 260"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="drop-shadow-[0_15px_30px_rgba(0,0,0,0.8)]"
+            {/* Top tracked status text matching the video */}
+            <motion.h2
+              className="text-xs sm:text-sm tracking-[0.3em] uppercase mb-10 font-sans font-medium"
+              style={{ color: "#f5c869" }}
+              key={stage}
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
             >
-              {/* Plate / Stand */}
-              <ellipse cx="130" cy="235" rx="100" ry="14" fill="#2a1e19" stroke="#d4a574" strokeWidth="1.5" />
-              <ellipse cx="130" cy="233" rx="90" ry="10" fill="#1f1612" />
+              {stage === "lighting" ? "LILINNYA LAGI DINYALAIN" : "LILINNYA UDAH NYALA"}
+            </motion.h2>
 
-              {/* Bottom Tier Cake */}
-              <rect x="55" y="150" width="150" height="75" rx="10" fill="url(#bottomTierGrad)" />
-              {/* Cream dripping */}
-              <path
-                d="M55 165 C 65 175, 75 160, 85 172 C 95 180, 105 165, 115 175 C 125 182, 135 168, 145 176 C 155 182, 165 166, 175 174 C 185 180, 195 168, 205 165"
-                stroke="#f7ede2"
-                strokeWidth="10"
-                strokeLinecap="round"
+            {/* ── THE 2-TIER CAKE SVG ── */}
+            <div className="relative my-2">
+              <svg
+                width="240"
+                height="220"
+                viewBox="0 0 240 220"
                 fill="none"
-              />
-              {/* Bottom tier decorative dots / pearls */}
-              <circle cx="75" cy="205" r="3.5" fill="#ffd700" opacity="0.8" />
-              <circle cx="105" cy="208" r="3.5" fill="#ffd700" opacity="0.8" />
-              <circle cx="130" cy="210" r="4" fill="#ffd700" opacity="0.9" />
-              <circle cx="155" cy="208" r="3.5" fill="#ffd700" opacity="0.8" />
-              <circle cx="185" cy="205" r="3.5" fill="#ffd700" opacity="0.8" />
+                xmlns="http://www.w3.org/2000/svg"
+                className="drop-shadow-[0_20px_40px_rgba(0,0,0,0.7)]"
+              >
+                {/* Platter / Base */}
+                <ellipse cx="120" cy="195" rx="85" ry="12" fill="#0d241c" stroke="#1d4335" strokeWidth="2" />
+                <ellipse cx="120" cy="193" rx="76" ry="8" fill="#071711" />
 
-              {/* Top Tier Cake */}
-              <rect x="75" y="95" width="110" height="60" rx="8" fill="url(#topTierGrad)" />
-              {/* Top cream dripping */}
-              <path
-                d="M75 106 C 85 116, 95 104, 105 114 C 115 120, 125 108, 135 116 C 145 122, 155 108, 165 116 C 175 120, 180 110, 185 106"
-                stroke="#f7ede2"
-                strokeWidth="8"
-                strokeLinecap="round"
-                fill="none"
-              />
-              {/* Strawberries / Rosettes on top tier */}
-              <circle cx="90" cy="94" r="5" fill="#e63946" />
-              <circle cx="115" cy="92" r="5" fill="#e63946" />
-              <circle cx="145" cy="92" r="5" fill="#e63946" />
-              <circle cx="170" cy="94" r="5" fill="#e63946" />
-
-              {/* ── CANDLE "2" ── */}
-              {/* Candle Body '2' */}
-              <path
-                d="M102 52 C 102 44, 114 44, 114 52 C 114 60, 102 68, 100 78 L 118 78"
-                stroke="url(#goldCandleGrad)"
-                strokeWidth="5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                fill="none"
-              />
-              {/* Wick */}
-              <line x1="108" y1="44" x2="108" y2="38" stroke="#555" strokeWidth="2" strokeLinecap="round" />
-
-              {/* ── CANDLE "0" ── */}
-              {/* Candle Body '0' */}
-              <rect
-                x="138"
-                y="46"
-                width="16"
-                height="32"
-                rx="8"
-                stroke="url(#goldCandleGrad)"
-                strokeWidth="5"
-                fill="none"
-              />
-              {/* Wick */}
-              <line x1="146" y1="46" x2="146" y2="38" stroke="#555" strokeWidth="2" strokeLinecap="round" />
-
-              {/* Gradients */}
-              <defs>
-                <linearGradient id="bottomTierGrad" x1="55" y1="150" x2="205" y2="225" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#4a2822" />
-                  <stop offset="0.5" stopColor="#361b17" />
-                  <stop offset="1" stopColor="#25120f" />
-                </linearGradient>
-                <linearGradient id="topTierGrad" x1="75" y1="95" x2="185" y2="155" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#63372c" />
-                  <stop offset="0.5" stopColor="#49241d" />
-                  <stop offset="1" stopColor="#301511" />
-                </linearGradient>
-                <linearGradient id="goldCandleGrad" x1="100" y1="40" x2="150" y2="80" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#ffd700" />
-                  <stop offset="0.5" stopColor="#d4af37" />
-                  <stop offset="1" stopColor="#aa771c" />
-                </linearGradient>
-              </defs>
-            </svg>
-
-            {/* ── CANDLE FLAMES (Visible when NOT blown) ── */}
-            {!isBlown && (
-              <>
-                {/* Flame on '2' */}
-                <motion.div
-                  className="absolute"
-                  style={{
-                    left: "102px",
-                    top: "22px",
-                  }}
-                  animate={{
-                    scale: [1, 1.15, 0.95, 1.1, 1],
-                    y: [0, -2, 1, -1, 0],
-                    rotate: [-2, 3, -1, 2, -2],
-                  }}
-                  transition={{
-                    duration: 1.2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                >
-                  <div
-                    className="w-4 h-7 rounded-full relative"
-                    style={{
-                      background: "radial-gradient(ellipse at 50% 80%, #ffffff 0%, #ffea79 25%, #ff9e00 60%, #ff3c00 90%, transparent 100%)",
-                      filter: "drop-shadow(0 0 10px #ff9e00) drop-shadow(0 0 20px #ff5400)",
-                    }}
-                  />
-                </motion.div>
-
-                {/* Flame on '0' */}
-                <motion.div
-                  className="absolute"
-                  style={{
-                    left: "140px",
-                    top: "22px",
-                  }}
-                  animate={{
-                    scale: [1, 1.1, 0.9, 1.15, 1],
-                    y: [0, -1, 2, -2, 0],
-                    rotate: [2, -3, 1, -2, 2],
-                  }}
-                  transition={{
-                    duration: 1.1,
-                    repeat: Infinity,
-                    delay: 0.15,
-                    ease: "easeInOut",
-                  }}
-                >
-                  <div
-                    className="w-4 h-7 rounded-full relative"
-                    style={{
-                      background: "radial-gradient(ellipse at 50% 80%, #ffffff 0%, #ffea79 25%, #ff9e00 60%, #ff3c00 90%, transparent 100%)",
-                      filter: "drop-shadow(0 0 10px #ff9e00) drop-shadow(0 0 20px #ff5400)",
-                    }}
-                  />
-                </motion.div>
-              </>
-            )}
-
-            {/* ── SMOKE PUFFS (When blown) ── */}
-            {isBlown && (
-              <>
-                <motion.div
-                  className="absolute w-2 h-2 rounded-full bg-white/40 blur-[1px]"
-                  style={{ left: "107px", top: "35px" }}
-                  initial={{ opacity: 0.8, y: 0, scale: 0.8 }}
-                  animate={{ opacity: 0, y: -45, scale: 3.5, x: -8 }}
-                  transition={{ duration: 1.6, ease: "easeOut" }}
+                {/* Bottom Tier (Cake Base) */}
+                <rect x="52" y="130" width="136" height="58" rx="6" fill="#a47148" />
+                {/* Scalloped Pink Frosting on Bottom Tier */}
+                <path
+                  d="M52 144 Q 60 154, 69 144 Q 78 154, 87 144 Q 96 154, 105 144 Q 114 154, 123 144 Q 132 154, 141 144 Q 150 154, 159 144 Q 168 154, 177 144 Q 183 150, 188 144 L 188 130 L 52 130 Z"
+                  fill="#f6cfcf"
                 />
-                <motion.div
-                  className="absolute w-2 h-2 rounded-full bg-white/40 blur-[1px]"
-                  style={{ left: "145px", top: "35px" }}
-                  initial={{ opacity: 0.8, y: 0, scale: 0.8 }}
-                  animate={{ opacity: 0, y: -45, scale: 3.5, x: 8 }}
-                  transition={{ duration: 1.6, delay: 0.1, ease: "easeOut" }}
-                />
-              </>
-            )}
-          </div>
+                {/* Sprinkles on Bottom Tier */}
+                <circle cx="75" cy="165" r="2.5" fill="#f5c869" />
+                <circle cx="95" cy="172" r="2.5" fill="#d8b4e2" />
+                <circle cx="120" cy="168" r="2.5" fill="#fbf5eb" />
+                <circle cx="145" cy="173" r="2.5" fill="#f5c869" />
+                <circle cx="165" cy="166" r="2.5" fill="#90e0ef" />
 
-          {/* ═══════════════════════════════════════════
-              CONTROLS & ACTION BUTTONS
-             ═══════════════════════════════════════════ */}
-          {!isBlown ? (
-            <div className="flex flex-col items-center gap-3 mt-4 w-full px-4">
-              {/* Mic Status / Level bar when listening */}
-              {isListening && (
-                <motion.div
-                  className="flex items-center gap-2 px-4 py-2 rounded-full text-xs"
-                  style={{
-                    background: "rgba(224, 169, 109, 0.15)",
-                    color: "var(--color-accent-light)",
-                    border: "1px solid var(--color-border-hover)",
-                  }}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                >
-                  <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                  <span>Mendengarkan tiupanmu... Tiup mikrofon HP-mu sekarang!</span>
-                  <div className="w-16 h-2 bg-white/10 rounded-full overflow-hidden ml-1">
-                    <div
-                      className="h-full bg-gradient-to-r from-yellow-400 to-red-500 transition-all duration-75"
-                      style={{ width: `${audioLevel}%` }}
+                {/* Top Tier (Smaller Tier) */}
+                <rect x="68" y="85" width="104" height="48" rx="5" fill="#b07d53" />
+                {/* Scalloped Pink Frosting on Top Tier */}
+                <path
+                  d="M68 98 Q 76 106, 85 98 Q 94 106, 103 98 Q 112 106, 121 98 Q 130 106, 139 98 Q 148 106, 157 98 Q 165 104, 172 98 L 172 85 L 68 85 Z"
+                  fill="#f6cfcf"
+                />
+
+                {/* ── 5 CANDLES ── */}
+                {candlePositions.map((cx, idx) => (
+                  <g key={idx}>
+                    {/* Candle Body */}
+                    <rect
+                      x={cx - 3.5}
+                      y="42"
+                      width="7"
+                      height="44"
+                      rx="2"
+                      fill="#fbf5eb"
+                      stroke="#f3b8c3"
+                      strokeWidth="1"
                     />
-                  </div>
+                    {/* Pink stripes on candle */}
+                    <line x1={cx - 3} y1="52" x2={cx + 3} y2="54" stroke="#f6cfcf" strokeWidth="2" />
+                    <line x1={cx - 3} y1="64" x2={cx + 3} y2="66" stroke="#f6cfcf" strokeWidth="2" />
+                    <line x1={cx - 3} y1="76" x2={cx + 3} y2="78" stroke="#f6cfcf" strokeWidth="2" />
+                    {/* Wick */}
+                    <line x1={cx} y1="42" x2={cx} y2="36" stroke="#444" strokeWidth="1.5" />
+                  </g>
+                ))}
+              </svg>
+
+              {/* ── CANDLE FLAMES (Only for lit candles) ── */}
+              {stage !== "blown" && (
+                <div className="absolute inset-0 pointer-events-none">
+                  {candlePositions.map((cx, idx) => {
+                    const isLit = litCandles.includes(idx);
+                    if (!isLit) return null;
+                    return (
+                      <motion.div
+                        key={idx}
+                        className="absolute"
+                        style={{
+                          left: `${cx - 8}px`,
+                          top: "14px",
+                        }}
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{
+                          scale: [1, 1.15, 0.95, 1.1, 1],
+                          y: [0, -1.5, 1, -1, 0],
+                          opacity: 1,
+                        }}
+                        transition={{
+                          scale: { duration: 1.1 + (idx % 3) * 0.2, repeat: Infinity, ease: "easeInOut" },
+                          y: { duration: 1.3, repeat: Infinity, ease: "easeInOut" },
+                        }}
+                      >
+                        {/* Glow halo */}
+                        <div
+                          className="w-8 h-8 -ml-2 -mt-1 rounded-full absolute pointer-events-none blur-sm"
+                          style={{
+                            background: "radial-gradient(circle, rgba(255, 200, 50, 0.5) 0%, transparent 70%)",
+                          }}
+                        />
+                        {/* Flame teardrop */}
+                        <div
+                          className="w-4 h-6 rounded-full relative"
+                          style={{
+                            background: "radial-gradient(ellipse at 50% 85%, #ffffff 0%, #fff099 30%, #f5a623 65%, #e63946 95%)",
+                            filter: "drop-shadow(0 0 6px #f5a623)",
+                          }}
+                        />
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* ── MATCHSTICK ANIMATION (During stage === "lighting") ── */}
+              {stage === "lighting" && (
+                <motion.div
+                  className="absolute pointer-events-none z-20"
+                  initial={{ x: 200, y: 100, opacity: 0, rotate: 35 }}
+                  animate={{
+                    x: [200, 68, 90, 112, 134, 156, 210],
+                    y: [100, 26, 26, 26, 26, 26, 50],
+                    opacity: [0, 1, 1, 1, 1, 1, 0],
+                    rotate: [35, 25, 25, 25, 25, 25, 45],
+                  }}
+                  transition={{
+                    duration: 4.8,
+                    ease: "easeInOut",
+                    times: [0, 0.2, 0.38, 0.56, 0.74, 0.9, 1],
+                  }}
+                >
+                  <svg width="45" height="45" viewBox="0 0 45 45" fill="none">
+                    {/* Wooden stick */}
+                    <line x1="12" y1="12" x2="38" y2="38" stroke="#d4a373" strokeWidth="3" strokeLinecap="round" />
+                    {/* Match head */}
+                    <circle cx="10" cy="10" r="3.5" fill="#a4161a" />
+                    {/* Match flame */}
+                    <circle cx="8" cy="8" r="4.5" fill="#f5a623" className="animate-pulse" />
+                    <circle cx="7" cy="7" r="2.5" fill="#ffffff" />
+                  </svg>
                 </motion.div>
               )}
 
-              {/* Main Buttons */}
-              <div className="flex flex-wrap items-center justify-center gap-3 mt-1">
-                {!isListening ? (
-                  <button
-                    onClick={startMicrophone}
-                    className="btn-primary flex items-center gap-2 text-xs sm:text-sm py-3 px-6 shadow-lg shadow-[#c8956c]/20"
-                  >
-                    <Mic size={16} />
-                    <span>Nyalakan Mic & Tiup Suara</span>
-                  </button>
-                ) : null}
-
-                {/* Manual blowout fallback button */}
-                <button
-                  onClick={triggerBlowout}
-                  className="flex items-center gap-2 text-xs py-3 px-5 rounded-full transition-all"
-                  style={{
-                    background: isListening ? "rgba(255, 255, 255, 0.08)" : "rgba(200, 149, 108, 0.15)",
-                    color: "var(--color-text-primary)",
-                    border: "1px solid var(--color-border)",
-                  }}
-                >
-                  <Wind size={15} className="text-accent-warm" />
-                  <span>{isListening ? "Atau Klik untuk Tiup Manual" : "Tiup Manual (Tanpa Mic)"}</span>
-                </button>
-              </div>
-
-              {micError && (
-                <p className="text-[11px] text-amber-300/80 mt-1 max-w-xs">{micError}</p>
+              {/* ── SMOKE PUFFS (When blown) ── */}
+              {stage === "blown" && (
+                <div className="absolute inset-0 pointer-events-none">
+                  {candlePositions.map((cx, idx) => (
+                    <motion.div
+                      key={idx}
+                      className="absolute w-2 h-2 rounded-full bg-white/50 blur-[1px]"
+                      style={{ left: `${cx - 1}px`, top: "34px" }}
+                      initial={{ opacity: 0.8, y: 0, scale: 0.8 }}
+                      animate={{
+                        opacity: 0,
+                        y: -40,
+                        scale: 3.5,
+                        x: idx % 2 === 0 ? -6 : 6,
+                      }}
+                      transition={{ duration: 1.6, delay: idx * 0.08, ease: "easeOut" }}
+                    />
+                  ))}
+                </div>
               )}
             </div>
-          ) : (
-            /* Celebration Message & Button to Enter Site */
-            <motion.div
-              className="flex flex-col items-center gap-4 mt-4 w-full px-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-            >
-              <div
-                className="p-4 sm:p-5 rounded-2xl max-w-md backdrop-blur-md"
-                style={{
-                  background: "rgba(20, 16, 14, 0.65)",
-                  border: "1px solid var(--color-border-hover)",
-                  boxShadow: "0 10px 40px rgba(0,0,0,0.5)",
-                }}
-              >
-                <div className="flex justify-center mb-2 text-[#ffd700]">
-                  <Sparkles size={20} />
-                </div>
-                <p className="text-romantic text-sm sm:text-base leading-relaxed text-[#f5efe6] italic">
-                  &ldquo;Di antara miliaran manusia di bumi, terima kasih sudah memilih untuk bertumbuh dan berbahagia bersamaku. Selamat memasuki usia 20 tahun yang penuh keanggunan, Rifdah.&rdquo;
-                </p>
-                <p className="text-xs text-right mt-3 text-accent-warm font-medium">
-                  — Dengan segenap cinta, Ryan ♥
-                </p>
-              </div>
 
+            {/* ── Text below the cake matching the reference video ── */}
+            {stage === "ready" && (
+              <motion.div
+                className="flex flex-col items-center mt-4 w-full"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <p className="text-xs sm:text-sm text-[#fbf5eb]/80 max-w-xs leading-relaxed mb-6">
+                  Lilinnya cuma lima, biar kuenya nggak kebakaran. Tiup ya, beneran tiup.
+                </p>
+
+                {/* ── Action Buttons ── */}
+                <div className="flex flex-col gap-3 w-full max-w-xs">
+                  {/* Button 1: IZINKAN MIKROFON (Yellow Pill) */}
+                  <button
+                    onClick={startMicrophone}
+                    className="w-full py-3.5 px-6 rounded-full font-sans font-semibold text-xs tracking-wider uppercase transition-all transform active:scale-95 shadow-lg select-none"
+                    style={{
+                      background: "#f5c869",
+                      color: "#1a1610",
+                      boxShadow: "0 6px 20px rgba(245, 200, 105, 0.3)",
+                    }}
+                  >
+                    {isListening ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-red-600 animate-ping" />
+                        <span>Mendengarkan... Tiup Sekarang! 💨</span>
+                      </span>
+                    ) : (
+                      "IZINKAN MIKROFON"
+                    )}
+                  </button>
+
+                  {/* Button 2: TEKAN LAMA AJA (Dark Pill) */}
+                  <div
+                    onMouseDown={handleHoldStart}
+                    onMouseUp={handleHoldEnd}
+                    onMouseLeave={handleHoldEnd}
+                    onTouchStart={handleHoldStart}
+                    onTouchEnd={handleHoldEnd}
+                    className="relative overflow-hidden w-full py-3.5 px-6 rounded-full font-sans text-xs tracking-wider uppercase text-[#fbf5eb] text-center cursor-pointer border select-none transition-all active:scale-95"
+                    style={{
+                      background: "rgba(18, 38, 30, 0.7)",
+                      borderColor: "rgba(245, 200, 105, 0.35)",
+                    }}
+                  >
+                    {/* Hold Progress Fill */}
+                    <div
+                      className="absolute inset-y-0 left-0 bg-[#f5c869]/25 transition-all"
+                      style={{ width: `${holdProgress}%` }}
+                    />
+                    <span className="relative z-10 font-medium">
+                      {holdProgress > 0 ? `Menahan... ${holdProgress}%` : "TEKAN LAMA AJA"}
+                    </span>
+                  </div>
+
+                  {micError && (
+                    <p className="text-[11px] text-amber-300/80 mt-1">{micError}</p>
+                  )}
+                </div>
+              </motion.div>
+            )}
+
+            {/* When blown: small text */}
+            {stage === "blown" && (
+              <motion.p
+                className="text-sm font-serif text-[#fbf5eb] mt-6"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+              >
+                Horeee! Lilinnya padam... ✨
+              </motion.p>
+            )}
+          </motion.div>
+        )}
+
+        {/* ═════════════════════════════════════════════
+            STAGE 4: SLIDE 1 — "20 TAHUN" (Matching Frame 7)
+           ═════════════════════════════════════════════ */}
+        {stage === "stats-age" && (
+          <motion.div
+            className="text-center z-10 flex flex-col items-center max-w-sm cursor-pointer"
+            onClick={() => setStage("stats-heart")}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -30 }}
+            transition={{ duration: 0.8 }}
+          >
+            <h1 className="text-7xl sm:text-8xl font-serif text-[#fbf5eb] mb-2 tracking-tight">
+              20
+            </h1>
+            <span className="text-xs sm:text-sm tracking-[0.35em] uppercase text-[#f5c869] mb-6 font-medium">
+              TAHUN
+            </span>
+            <p className="text-sm sm:text-base text-[#fbf5eb]/80 leading-relaxed max-w-xs font-serif">
+              Artinya bumi udah 20 kali keliling matahari sejak kamu ada.
+            </p>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setStage("stats-heart");
+              }}
+              className="mt-10 p-3 rounded-full border border-[#f5c869]/30 text-[#f5c869] hover:bg-[#f5c869]/10 transition-all"
+            >
+              <ChevronRight size={20} />
+            </button>
+          </motion.div>
+        )}
+
+        {/* ═════════════════════════════════════════════
+            STAGE 5: SLIDE 2 — "737 JUTA DETAK JANTUNG" (Matching Frame 8)
+           ═════════════════════════════════════════════ */}
+        {stage === "stats-heart" && (
+          <motion.div
+            className="text-center z-10 flex flex-col items-center max-w-sm cursor-pointer"
+            onClick={() => setStage("final-wish")}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -30 }}
+            transition={{ duration: 0.8 }}
+          >
+            <h1 className="text-5xl sm:text-6xl font-serif text-[#fbf5eb] mb-2 tracking-tight">
+              737 juta
+            </h1>
+            <span className="text-xs sm:text-sm tracking-[0.35em] uppercase text-[#f5c869] mb-6 font-medium">
+              DETAK JANTUNG
+            </span>
+            <p className="text-sm sm:text-base text-[#fbf5eb]/80 leading-relaxed max-w-xs font-serif">
+              Kira-kira segitu sejak napas pertama kamu.
+            </p>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setStage("final-wish")}
+              }
+              className="mt-10 p-3 rounded-full border border-[#f5c869]/30 text-[#f5c869] hover:bg-[#f5c869]/10 transition-all"
+            >
+              <ChevronRight size={20} />
+            </button>
+          </motion.div>
+        )}
+
+        {/* ═════════════════════════════════════════════
+            STAGE 6: SLIDE 3 — FINAL WISH & ENTER WEBSITE (Matching Frame 9)
+           ═════════════════════════════════════════════ */}
+        {stage === "final-wish" && (
+          <motion.div
+            className="text-center z-10 flex flex-col items-center max-w-md w-full py-4"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <span className="text-[11px] tracking-[0.3em] uppercase text-[#f5c869] mb-3 font-medium">
+              DARI HATI RYAN UNTUKMU
+            </span>
+
+            <h2 className="text-3xl sm:text-4xl font-serif text-[#fbf5eb] mb-4 flex items-center justify-center gap-2">
+              <span>Rifdah Cantikku</span>
+              <span>☺️</span>
+            </h2>
+
+            <p className="text-xs sm:text-sm text-[#fbf5eb]/85 leading-relaxed max-w-sm font-serif mb-6 text-justify sm:text-center">
+              Aku bersyukur kamu hadir di hidupku. Tetap jadi Rifdah yang ceria ya, bahagia dan menggapai segala cita-citamu... Semoga langkahmu selalu dipeluk damai, dan di lain waktu kita bisa rayain ulang tahun ini bareng-bareng ya 🥰.
+            </p>
+
+            <div className="w-16 h-[1px] bg-[#f5c869]/30 my-2" />
+
+            <div className="my-4">
+              <span className="text-[10px] tracking-[0.3em] uppercase text-[#f5c869]">
+                ULANG TAHUN BERIKUTNYA
+              </span>
+              <h3 className="text-4xl sm:text-5xl font-serif text-[#fbf5eb] mt-1 mb-1">
+                359°
+              </h3>
+              <span className="text-[11px] tracking-widest uppercase text-[#fbf5eb]/60">
+                HARI LAGI
+              </span>
+            </div>
+
+            {/* Buttons matching Frame 9 */}
+            <div className="flex flex-col sm:flex-row items-center gap-3 mt-4 w-full max-w-xs">
               <button
                 onClick={handleEnterWebsite}
-                className="btn-primary flex items-center gap-2 text-sm sm:text-base py-3.5 px-8 mt-2 shadow-2xl hover:scale-105 transition-transform"
+                className="w-full py-3.5 px-6 rounded-full font-sans font-semibold text-xs tracking-wider uppercase transition-all transform active:scale-95 shadow-lg select-none flex items-center justify-center gap-2"
+                style={{
+                  background: "#f5c869",
+                  color: "#1a1610",
+                  boxShadow: "0 6px 20px rgba(245, 200, 105, 0.3)",
+                }}
               >
-                <Heart size={16} className="fill-current text-accent-warm" />
-                <span>Buka Hadiah & Kenangan Kita</span>
+                <Heart size={14} className="fill-current" />
+                <span>Buka Hadiah Kita</span>
               </button>
-            </motion.div>
-          )}
-        </div>
+
+              <button
+                onClick={() => setStage("lighting")}
+                className="w-full py-3 px-6 rounded-full font-sans text-xs tracking-wider uppercase text-[#fbf5eb] text-center border select-none transition-all active:scale-95"
+                style={{
+                  background: "rgba(18, 38, 30, 0.7)",
+                  borderColor: "rgba(245, 200, 105, 0.35)",
+                }}
+              >
+                Tiup Lagi
+              </button>
+            </div>
+          </motion.div>
+        )}
       </motion.div>
     </AnimatePresence>
   );
