@@ -11,16 +11,16 @@ export default function LoveLetter() {
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
 
   const wishes = [
-    "Semoga hatimu selalu dipeluk damai dan ketenangan.",
-    "Semoga setiap langkah dan impian besarmu dipermudah oleh-Nya.",
-    "Tawamu yang selalu jadi obat terbaik di hari-hari lelahku.",
-    "Terima kasih telah mengajarkanku arti mencintai dengan tulus.",
-    "Semoga kamu selalu percaya pada kemampuan hebat dalam dirimu.",
-    "Aku berjanji akan selalu ada di setiap musim hidupmu.",
-    "Keanggunan hatimu adalah keindahan yang paling abadi.",
-    "Dua puluh tahun yang membentuk perempuan paling istimewa bagiku.",
-    "Semoga semesta senantiasa menjaga senyum manis di wajahmu.",
-    "Menua bersamamu adalah doa yang selalu kuaminkan.",
+    "Maafkan aku yang sempat membuatmu merasa berjuang sendirian di sana.",
+    "Terima kasih untuk hatimu yang begitu sabar dan tulus menungguku.",
+    "Jarak dan waktu ini tak akan pernah mampu melunturkan rasa sayangku padamu.",
+    "Tawamu yang manis selalu jadi penyejuk terbaik di hari-hari lelahku.",
+    "Aku berjanji akan berusaha lebih baik lagi untuk menjaga dan mengabarimu.",
+    "Semoga setiap impian besar yang kamu rajut dipermudah oleh-Nya.",
+    "Kamu adalah rumah ternyaman yang selalu ingin kutuju untuk berpulang.",
+    "Dua puluh tahun yang membentuk perempuan paling anggun dan kuat bagiku.",
+    "Semoga kita segera disatukan kembali tanpa ada lagi jarak yang memisahkan.",
+    "Menua dan merajut masa depan bersamamu adalah doa yang selalu kuaminkan.",
   ];
 
   const toggleWish = (idx: number) => {
@@ -60,17 +60,17 @@ export default function LoveLetter() {
             className="inline-block text-xs sm:text-sm tracking-[0.3em] uppercase mb-4 font-sans"
             style={{ color: "var(--color-text-accent)" }}
           >
-            Spesial Dari Hati Kekasihmu
+            Sebuah Warkat Dari Lubuk Hati
           </span>
           <div className="divider-accent mx-auto mb-6" />
           <h2 className="heading-cinematic text-3xl sm:text-4xl md:text-5xl lg:text-6xl mb-4">
-            Surat Cinta <span className="text-accent-warm">& Harapan</span>
+            Surat Cinta <span className="text-accent-warm">& Permohonan Maaf</span>
           </h2>
           <p
             className="text-romantic text-sm sm:text-base max-w-xl mx-auto"
             style={{ color: "var(--color-text-secondary)" }}
           >
-            Sebuah warkat abadi yang kutulis untuk menyambut dua dekade keanggunanmu, Rifdah.
+            Untuk bidadariku yang paling sabar dan tegar di seberang sana, Rifdah Nur Shafiyah.
           </p>
         </motion.div>
 
@@ -140,7 +140,7 @@ export default function LoveLetter() {
                 </h3>
 
                 <p className="text-xs sm:text-sm text-romantic text-[#f5efe6]/70 mb-6 max-w-sm">
-                  Tersimpan di dalamnya seluruh doa, janji, dan rasa syukurku. Ketuk untuk membuka surat ini.
+                  Tersimpan di dalamnya seluruh penyesalan, rasa terima kasih, dan janji tulusku. Ketuk untuk membuka surat ini.
                 </p>
 
                 <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-medium tracking-wider bg-[#c8956c]/20 text-accent-warm border border-[#c8956c]/40 group-hover:bg-[#c8956c]/30 transition-all">
@@ -163,7 +163,7 @@ export default function LoveLetter() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
               >
-                {/* Decorative parchment paper watermark */}
+                {/* Decorative parchment watermark */}
                 <div className="absolute top-4 right-4 sm:top-8 sm:right-8 opacity-10 pointer-events-none text-accent-warm">
                   <Heart size={120} />
                 </div>
@@ -189,41 +189,54 @@ export default function LoveLetter() {
                     <span className="text-2xl sm:text-3xl text-accent-warm font-serif italic float-left mr-2 leading-none">
                       S
                     </span>
-                    elamat ulang tahun yang kedua puluh, cintaku. Dua dekade bukanlah waktu yang singkat; 
-                    ia adalah rangkuman dari setiap proses, senyuman, tangisan, dan kebaikan yang telah 
-                    membentukmu menjadi wanita yang luar biasa anggun seperti hari ini.
+                    elamat ulang tahun yang kedua puluh, bidadariku. Dua dekade bukanlah waktu yang singkat; 
+                    ia adalah saksi bagaimana kamu tumbuh menjadi perempuan yang begitu luar biasa, anggun, 
+                    dan memiliki hati yang teramat indah.
                   </p>
 
                   <p>
-                    Mengenalmu dan bisa berjalan bersamamu adalah salah satu berkah terindah yang pernah 
-                    Tuhan anugerahkan dalam hidupku. Di tengah dunia yang sering kali bising dan terburu-buru, 
-                    kehadiranmu selalu menjadi tempatku berpulang—tempat yang teduh, hangat, dan penuh kedamaian.
+                    Namun sayang, sebelum kata-kata bahagiaku mengalir lebih jauh, dari lubuk hatiku yang 
+                    paling dalam, izinkan aku mengucapkan satu hal: <strong className="text-accent-warm font-normal italic">Maafkan aku</strong>. 
+                    Maafkan aku karena beberapa bulan terakhir ini—sejak bulan Juli yang lalu—aku seperti 
+                    menghilang, tenggelam dalam duniaku sendiri, dan hampir tidak memberimu kabar yang 
+                    pantas kamu dapatkan.
                   </p>
 
                   <p>
-                    Mungkin jarak atau kesibukan kadang menguji kita, tapi percayalah, tak ada sedetik pun 
-                    rasa sayang ini berkurang. Setiap senyummu di layar HP, setiap tawamu saat kita berbagi cerita, 
-                    selalu berhasil mengubah hari-hariku yang biasa menjadi luar biasa berharga.
+                    Aku tahu betapa beratnya berada dalam hubungan jarak jauh (LDR) seperti ini. 
+                    Jarak yang membentang di antara kita sudah cukup menjadi ujian, dan kebodohanku 
+                    justru menambah beban itu dengan membiarkanmu merasa berjuang sendirian di sana. 
+                    Aku membayangkan hari-hari di mana kamu mungkin merasa sepi, bertanya-tanya, menanti kabar, 
+                    atau menahan lelah tanpa ada bahuku untuk bersandar. Membayangkan itu semua membuat 
+                    hatiku teramat perih dan menyesal.
                   </p>
 
                   <p>
-                    Di usiamu yang ke-20 ini, doaku tak akan pernah putus untukmu. Semoga hatimu selalu dijaga 
-                    oleh kebahagiaan, langkahmu dimudahkan dalam menggapai segala cita-cita besar yang kamu impikan, 
-                    dan semoga kamu selalu dikelilingi oleh cinta yang tulus. Jangan pernah ragu pada kemampuan 
-                    hebat yang ada di dalam dirimu, ya?
+                    Tapi ketahuilah dengan sungguh-sungguh, sayangku... menghilangnya kabarku sama sekali 
+                    bukan karena cintaku berkurang, bukan pula karena aku melupakanmu. Rasa sayang dan rinduku 
+                    padamu tak pernah surut sedetik pun. Namamu adalah doa yang paling sering kubisikkan dalam hening, 
+                    dan bayangan senyummu adalah satu-satunya rumah yang selalu ingin kutuju saat dunia terasa melelahkan.
+                  </p>
+
+                  <p>
+                    Terima kasih telah menjadi wanita yang begitu luar biasa sabar dan tegar. Terima kasih 
+                    karena tidak melepaskan genggaman ini di saat aku sedang sangat tidak sempurna. 
+                    Di usiamu yang ke-20 ini, aku ingin berjanji: aku tidak akan lagi membiarkanmu merasa 
+                    berjuang sendirian. Aku ingin kembali hadir seutuhnya, merayakan setiap bahagiamu, 
+                    mendengarkan setiap ceritamu, dan menemanimu menggapai semua cita-cita besar yang kamu impikan.
                   </p>
 
                   <p className="pt-2">
-                    Terima kasih sudah memilih untuk terus bergandengan tangan denganku. Aku berjanji akan selalu 
-                    ada untuk merayakan setiap bahagiamu, dan menjadi tempatmu bersandar di saat lelah. 
-                    Selamat bertumbuh lebih indah lagi, Bidadariku.
+                    Semoga Allah senantiasa menjagamu, melimpahkan kebahagiaan di setiap hembusan nafasmu, 
+                    dan semoga waktu segera mempertemukan kita kembali agar kita bisa merayakan hari-hari 
+                    bahagia kita bersama secara langsung. Selamat memasuki usia 20 tahun, cintaku.
                   </p>
                 </div>
 
                 {/* Letter Signature */}
                 <div className="mt-10 pt-6 border-t border-[#d4a574]/20 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
                   <div>
-                    <p className="text-xs text-[#f5efe6]/60">Tertanda dengan segenap cinta,</p>
+                    <p className="text-xs text-[#f5efe6]/60">Tertanda dengan segenap penyesalan & cinta yang abadi,</p>
                     <p className="text-xl font-serif text-accent-warm mt-1 italic">
                       Ryan Ramadhan ♥
                     </p>
@@ -244,11 +257,11 @@ export default function LoveLetter() {
                   <div className="flex items-center gap-2 mb-4">
                     <Sparkles size={16} className="text-[#ffd700]" />
                     <h4 className="text-sm font-sans tracking-wider uppercase text-[#f5efe6] font-medium">
-                      10 Bisikan Kasih & Harapan Ryan Untukmu:
+                      10 Bisikan Kasih & Janji Ryan Untukmu:
                     </h4>
                   </div>
                   <p className="text-xs text-[#f5efe6]/60 mb-4">
-                    Ketuk salah satu kartu di bawah untuk membuka bisikan harapan:
+                    Ketuk salah satu kartu di bawah untuk membuka bisikan janji:
                   </p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -269,7 +282,7 @@ export default function LoveLetter() {
                               #{idx + 1}
                             </span>
                             <span className={isRevealed ? "text-[#f5efe6]" : "text-[#f5efe6]/50 italic"}>
-                              {isRevealed ? wish : "Ketuk untuk membuka harapan..."}
+                              {isRevealed ? wish : "Ketuk untuk membuka bisikan..."}
                             </span>
                           </div>
                           <span className="text-accent-warm flex-shrink-0">
@@ -288,4 +301,3 @@ export default function LoveLetter() {
     </section>
   );
 }
-

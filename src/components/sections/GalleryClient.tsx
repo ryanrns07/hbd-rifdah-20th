@@ -120,7 +120,8 @@ function PhotoCard({
         sizes="(max-width: 768px) 80vw, 500px"
         className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
         style={{
-          filter: "brightness(0.85) contrast(1.05) saturate(0.9) sepia(0.08)",
+          objectPosition: "center 20%",
+          filter: "brightness(0.88) contrast(1.05) saturate(0.95) sepia(0.05)",
         }}
         unoptimized
       />

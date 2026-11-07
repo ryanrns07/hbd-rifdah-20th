@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
-import { Mic, Wind, Heart, Sparkles, ChevronRight, RotateCcw } from "lucide-react";
+import { Mic, Wind, Heart, ChevronRight, RotateCcw } from "lucide-react";
 
 interface BirthdayIntroProps {
   onComplete?: () => void;
@@ -26,6 +26,9 @@ export default function BirthdayIntro({ onComplete }: BirthdayIntroProps) {
   const blowCountRef = useRef(0);
   const holdIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // 5 Symmetrical Candle positions on top of the cake
+  const candlePositions = [80, 100, 120, 140, 160];
+
   // ── Step 0: Auto-advance from Greeting to Lighting Cake ──
   useEffect(() => {
     if (stage === "greeting") {
@@ -41,7 +44,6 @@ export default function BirthdayIntro({ onComplete }: BirthdayIntroProps) {
     if (stage === "lighting") {
       setLitCandles([]);
       const timers: NodeJS.Timeout[] = [];
-      // Light candles sequentially: candle 0, 1, 2, 3, 4
       [0, 1, 2, 3, 4].forEach((idx) => {
         const t = setTimeout(() => {
           setLitCandles((prev) => [...prev, idx]);
@@ -154,7 +156,6 @@ export default function BirthdayIntro({ onComplete }: BirthdayIntroProps) {
         if (!analyserRef.current) return;
         analyserRef.current.getByteFrequencyData(dataArray);
 
-        // Low frequency energy spike detection for microphone wind blow
         let lowEnergy = 0;
         const lowBins = Math.min(20, bufferLength);
         for (let i = 0; i < lowBins; i++) {
@@ -188,7 +189,7 @@ export default function BirthdayIntro({ onComplete }: BirthdayIntroProps) {
     setHoldProgress(0);
 
     const startTime = Date.now();
-    const duration = 1100; // 1.1s hold to blow
+    const duration = 1100;
 
     holdIntervalRef.current = setInterval(() => {
       const elapsed = Date.now() - startTime;
@@ -233,7 +234,6 @@ export default function BirthdayIntro({ onComplete }: BirthdayIntroProps) {
     }
   };
 
-  // ── Re-open button if dismissed ──
   if (isDismissed) {
     return (
       <motion.button
@@ -257,9 +257,6 @@ export default function BirthdayIntro({ onComplete }: BirthdayIntroProps) {
     );
   }
 
-  // Candle positions across the top tier (x-coordinates)
-  const candlePositions = [72, 94, 116, 138, 160];
-
   return (
     <AnimatePresence>
       <motion.div
@@ -275,9 +272,9 @@ export default function BirthdayIntro({ onComplete }: BirthdayIntroProps) {
         <div
           className="absolute pointer-events-none rounded-full blur-3xl transition-opacity duration-1000"
           style={{
-            width: "420px",
-            height: "420px",
-            background: "radial-gradient(circle, rgba(245, 200, 105, 0.18) 0%, transparent 70%)",
+            width: "440px",
+            height: "440px",
+            background: "radial-gradient(circle, rgba(245, 200, 105, 0.2) 0%, transparent 70%)",
             opacity: stage === "ready" || stage === "lighting" ? 1 : 0.4,
           }}
         />
@@ -310,7 +307,7 @@ export default function BirthdayIntro({ onComplete }: BirthdayIntroProps) {
         )}
 
         {/* ═════════════════════════════════════════════
-            STAGE 1 & 2: THE CAKE & CANDLE LIGHTING / BLOW
+            STAGE 1 & 2: THE REFINED CAKE & CANDLE LIGHTING / BLOW
            ═════════════════════════════════════════════ */}
         {(stage === "lighting" || stage === "ready" || stage === "blown") && (
           <motion.div
@@ -321,7 +318,7 @@ export default function BirthdayIntro({ onComplete }: BirthdayIntroProps) {
           >
             {/* Top tracked status text matching the video */}
             <motion.h2
-              className="text-xs sm:text-sm tracking-[0.3em] uppercase mb-10 font-sans font-medium"
+              className="text-xs sm:text-sm tracking-[0.3em] uppercase mb-8 font-sans font-medium"
               style={{ color: "#f5c869" }}
               key={stage}
               initial={{ opacity: 0, y: -8 }}
@@ -331,49 +328,53 @@ export default function BirthdayIntro({ onComplete }: BirthdayIntroProps) {
               {stage === "lighting" ? "LILINNYA LAGI DINYALAIN" : "LILINNYA UDAH NYALA"}
             </motion.h2>
 
-            {/* ── THE 2-TIER CAKE SVG ── */}
+            {/* ── REFINED CAKE SVG (Neat, clean, perfectly centered) ── */}
             <div className="relative my-2">
               <svg
                 width="240"
-                height="220"
-                viewBox="0 0 240 220"
+                height="210"
+                viewBox="0 0 240 210"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
-                className="drop-shadow-[0_20px_40px_rgba(0,0,0,0.7)]"
+                className="drop-shadow-[0_20px_35px_rgba(0,0,0,0.6)]"
               >
-                {/* Platter / Base */}
-                <ellipse cx="120" cy="195" rx="85" ry="12" fill="#0d241c" stroke="#1d4335" strokeWidth="2" />
-                <ellipse cx="120" cy="193" rx="76" ry="8" fill="#071711" />
+                {/* Platter / Dark Circular Plate */}
+                <ellipse cx="120" cy="188" rx="88" ry="12" fill="#0c231a" stroke="#16382b" strokeWidth="2" />
+                <ellipse cx="120" cy="186" rx="80" ry="8" fill="#071711" />
 
-                {/* Bottom Tier (Cake Base) */}
-                <rect x="52" y="130" width="136" height="58" rx="6" fill="#a47148" />
-                {/* Scalloped Pink Frosting on Bottom Tier */}
+                {/* Bottom Tier Sponge */}
+                <rect x="48" y="125" width="144" height="60" rx="8" fill="#9e6e47" />
+
+                {/* Bottom Tier Scalloped Frosting (Clean & Neatly Rounded) */}
                 <path
-                  d="M52 144 Q 60 154, 69 144 Q 78 154, 87 144 Q 96 154, 105 144 Q 114 154, 123 144 Q 132 154, 141 144 Q 150 154, 159 144 Q 168 154, 177 144 Q 183 150, 188 144 L 188 130 L 52 130 Z"
-                  fill="#f6cfcf"
+                  d="M48 138 C 56 148, 64 148, 72 138 C 80 148, 88 148, 96 138 C 104 148, 112 148, 120 138 C 128 148, 136 148, 144 138 C 152 148, 160 148, 168 138 C 176 148, 184 148, 192 138 L 192 125 L 48 125 Z"
+                  fill="#f7cfd3"
                 />
+
                 {/* Sprinkles on Bottom Tier */}
-                <circle cx="75" cy="165" r="2.5" fill="#f5c869" />
-                <circle cx="95" cy="172" r="2.5" fill="#d8b4e2" />
-                <circle cx="120" cy="168" r="2.5" fill="#fbf5eb" />
-                <circle cx="145" cy="173" r="2.5" fill="#f5c869" />
-                <circle cx="165" cy="166" r="2.5" fill="#90e0ef" />
+                <circle cx="68" cy="158" r="2.5" fill="#f5c869" />
+                <circle cx="88" cy="166" r="2.5" fill="#d8b4e2" />
+                <circle cx="112" cy="162" r="2.5" fill="#fbf5eb" />
+                <circle cx="136" cy="167" r="2.5" fill="#f5c869" />
+                <circle cx="158" cy="160" r="2.5" fill="#90e0ef" />
+                <circle cx="176" cy="165" r="2.5" fill="#f7cfd3" />
 
-                {/* Top Tier (Smaller Tier) */}
-                <rect x="68" y="85" width="104" height="48" rx="5" fill="#b07d53" />
-                {/* Scalloped Pink Frosting on Top Tier */}
+                {/* Top Tier Sponge */}
+                <rect x="66" y="80" width="108" height="48" rx="6" fill="#ab7b52" />
+
+                {/* Top Tier Scalloped Frosting */}
                 <path
-                  d="M68 98 Q 76 106, 85 98 Q 94 106, 103 98 Q 112 106, 121 98 Q 130 106, 139 98 Q 148 106, 157 98 Q 165 104, 172 98 L 172 85 L 68 85 Z"
-                  fill="#f6cfcf"
+                  d="M66 92 C 73 100, 81 100, 88 92 C 95 100, 103 100, 110 92 C 117 100, 124 100, 131 92 C 138 100, 146 100, 153 92 C 160 100, 167 100, 174 92 L 174 80 L 66 80 Z"
+                  fill="#f7cfd3"
                 />
 
-                {/* ── 5 CANDLES ── */}
+                {/* ── 5 ELEGANT CANDLES ── */}
                 {candlePositions.map((cx, idx) => (
                   <g key={idx}>
                     {/* Candle Body */}
                     <rect
                       x={cx - 3.5}
-                      y="42"
+                      y="38"
                       width="7"
                       height="44"
                       rx="2"
@@ -381,12 +382,12 @@ export default function BirthdayIntro({ onComplete }: BirthdayIntroProps) {
                       stroke="#f3b8c3"
                       strokeWidth="1"
                     />
-                    {/* Pink stripes on candle */}
-                    <line x1={cx - 3} y1="52" x2={cx + 3} y2="54" stroke="#f6cfcf" strokeWidth="2" />
-                    <line x1={cx - 3} y1="64" x2={cx + 3} y2="66" stroke="#f6cfcf" strokeWidth="2" />
-                    <line x1={cx - 3} y1="76" x2={cx + 3} y2="78" stroke="#f6cfcf" strokeWidth="2" />
-                    {/* Wick */}
-                    <line x1={cx} y1="42" x2={cx} y2="36" stroke="#444" strokeWidth="1.5" />
+                    {/* Candy Pink Stripes */}
+                    <line x1={cx - 3} y1="48" x2={cx + 3} y2="50" stroke="#f7cfd3" strokeWidth="2" strokeLinecap="round" />
+                    <line x1={cx - 3} y1="60" x2={cx + 3} y2="62" stroke="#f7cfd3" strokeWidth="2" strokeLinecap="round" />
+                    <line x1={cx - 3} y1="72" x2={cx + 3} y2="74" stroke="#f7cfd3" strokeWidth="2" strokeLinecap="round" />
+                    {/* Candle Wick */}
+                    <line x1={cx} y1="38" x2={cx} y2="32" stroke="#333" strokeWidth="1.5" strokeLinecap="round" />
                   </g>
                 ))}
               </svg>
@@ -403,7 +404,7 @@ export default function BirthdayIntro({ onComplete }: BirthdayIntroProps) {
                         className="absolute"
                         style={{
                           left: `${cx - 8}px`,
-                          top: "14px",
+                          top: "10px",
                         }}
                         initial={{ scale: 0, opacity: 0 }}
                         animate={{
@@ -437,16 +438,16 @@ export default function BirthdayIntro({ onComplete }: BirthdayIntroProps) {
                 </div>
               )}
 
-              {/* ── MATCHSTICK ANIMATION (During stage === "lighting") ── */}
+              {/* ── SMOOTH MATCHSTICK ANIMATION ── */}
               {stage === "lighting" && (
                 <motion.div
                   className="absolute pointer-events-none z-20"
-                  initial={{ x: 200, y: 100, opacity: 0, rotate: 35 }}
+                  initial={{ x: 200, y: 80, opacity: 0, rotate: 30 }}
                   animate={{
-                    x: [200, 68, 90, 112, 134, 156, 210],
-                    y: [100, 26, 26, 26, 26, 26, 50],
+                    x: [200, 76, 96, 116, 136, 156, 210],
+                    y: [80, 22, 22, 22, 22, 22, 45],
                     opacity: [0, 1, 1, 1, 1, 1, 0],
-                    rotate: [35, 25, 25, 25, 25, 25, 45],
+                    rotate: [30, 22, 22, 22, 22, 22, 40],
                   }}
                   transition={{
                     duration: 4.8,
@@ -455,11 +456,8 @@ export default function BirthdayIntro({ onComplete }: BirthdayIntroProps) {
                   }}
                 >
                   <svg width="45" height="45" viewBox="0 0 45 45" fill="none">
-                    {/* Wooden stick */}
                     <line x1="12" y1="12" x2="38" y2="38" stroke="#d4a373" strokeWidth="3" strokeLinecap="round" />
-                    {/* Match head */}
                     <circle cx="10" cy="10" r="3.5" fill="#a4161a" />
-                    {/* Match flame */}
                     <circle cx="8" cy="8" r="4.5" fill="#f5a623" className="animate-pulse" />
                     <circle cx="7" cy="7" r="2.5" fill="#ffffff" />
                   </svg>
@@ -473,7 +471,7 @@ export default function BirthdayIntro({ onComplete }: BirthdayIntroProps) {
                     <motion.div
                       key={idx}
                       className="absolute w-2 h-2 rounded-full bg-white/50 blur-[1px]"
-                      style={{ left: `${cx - 1}px`, top: "34px" }}
+                      style={{ left: `${cx - 1}px`, top: "30px" }}
                       initial={{ opacity: 0.8, y: 0, scale: 0.8 }}
                       animate={{
                         opacity: 0,
@@ -496,7 +494,7 @@ export default function BirthdayIntro({ onComplete }: BirthdayIntroProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                <p className="text-xs sm:text-sm text-[#fbf5eb]/80 max-w-xs leading-relaxed mb-6">
+                <p className="text-xs sm:text-sm text-[#fbf5eb]/80 max-w-xs leading-relaxed mb-6 font-sans">
                   Lilinnya cuma lima, biar kuenya nggak kebakaran. Tiup ya, beneran tiup.
                 </p>
 
@@ -552,7 +550,7 @@ export default function BirthdayIntro({ onComplete }: BirthdayIntroProps) {
               </motion.div>
             )}
 
-            {/* When blown: small text */}
+            {/* When blown: status */}
             {stage === "blown" && (
               <motion.p
                 className="text-sm font-serif text-[#fbf5eb] mt-6"
@@ -624,8 +622,8 @@ export default function BirthdayIntro({ onComplete }: BirthdayIntroProps) {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                setStage("final-wish")}
-              }
+                setStage("final-wish");
+              }}
               className="mt-10 p-3 rounded-full border border-[#f5c869]/30 text-[#f5c869] hover:bg-[#f5c869]/10 transition-all"
             >
               <ChevronRight size={20} />
@@ -634,7 +632,7 @@ export default function BirthdayIntro({ onComplete }: BirthdayIntroProps) {
         )}
 
         {/* ═════════════════════════════════════════════
-            STAGE 6: SLIDE 3 — FINAL WISH & ENTER WEBSITE (Matching Frame 9)
+            STAGE 6: SLIDE 3 — FINAL WISH WITH SINCERE APOLOGY (Matching Frame 9)
            ═════════════════════════════════════════════ */}
         {stage === "final-wish" && (
           <motion.div
@@ -647,18 +645,18 @@ export default function BirthdayIntro({ onComplete }: BirthdayIntroProps) {
               DARI HATI RYAN UNTUKMU
             </span>
 
-            <h2 className="text-3xl sm:text-4xl font-serif text-[#fbf5eb] mb-4 flex items-center justify-center gap-2">
+            <h2 className="text-3xl sm:text-4xl font-serif text-[#fbf5eb] mb-3 flex items-center justify-center gap-2">
               <span>Rifdah Cantikku</span>
               <span>☺️</span>
             </h2>
 
-            <p className="text-xs sm:text-sm text-[#fbf5eb]/85 leading-relaxed max-w-sm font-serif mb-6 text-justify sm:text-center">
-              Aku bersyukur kamu hadir di hidupku. Tetap jadi Rifdah yang ceria ya, bahagia dan menggapai segala cita-citamu... Semoga langkahmu selalu dipeluk damai, dan di lain waktu kita bisa rayain ulang tahun ini bareng-bareng ya 🥰.
+            <p className="text-xs sm:text-sm text-[#fbf5eb]/85 leading-relaxed max-w-sm font-serif mb-5 text-justify sm:text-center">
+              Maaf ya sayang kalau beberapa bulan kemarin sejak Juli aku sempat hilang kabar dan membiarkanmu merasa berjuang sendirian di sana. Terima kasih sudah tetap sabar dan tegar menungguku... Tetap jadi Rifdah yang ceria ya, bahagia dan menggapai segala cita-citamu. Semoga di lain waktu kita bisa rayain bareng-bareng secara langsung ya 🥰.
             </p>
 
             <div className="w-16 h-[1px] bg-[#f5c869]/30 my-2" />
 
-            <div className="my-4">
+            <div className="my-3">
               <span className="text-[10px] tracking-[0.3em] uppercase text-[#f5c869]">
                 ULANG TAHUN BERIKUTNYA
               </span>
